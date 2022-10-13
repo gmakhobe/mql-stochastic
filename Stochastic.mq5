@@ -18,6 +18,8 @@ int stochasticHandler;
 
 MqlParam mqlParams[];
 
+datetime previousTime;
+
 // Indicator Init
 int OnInit()
 {
@@ -37,6 +39,20 @@ int OnCalculate(const int rates_total,
                 const long &volume[],
                 const int &spread[])
 {
+   uint _dataPoints = 1;
+   double _stochasticData[];
+   bool _asSeries = true;
+   
+   ArraySetAsSeries(time, _asSeries);
+
+   if (stachasticIndicatorData(stochasticHandler, _stochasticData, _dataPoints) && time[1] != previousTime)
+   {
+      Print("Stochastic Information => ", _stochasticData[0]);
+      
+      previousTime = time[1];
+   }
+   
+   
    return(rates_total);
 }
 
@@ -69,3 +85,21 @@ bool stochasticIndicatorInit(
    return true;
 }
 
+bool stachasticIndicatorData(int& _stochasticHandler, double& _stochasticData[], uint _dataPoints)
+{
+   bool _asSeries = true;
+   
+   if(_stochasticHandler != INVALID_HANDLE)
+   {
+      ArraySetAsSeries(_stochasticData, _asSeries);
+      
+      if (CopyBuffer(_stochasticHandler, 0, 0, _dataPoints, _stochasticData) == 0)
+      {
+         Print("An error happened while copy indicator buffer data: ", GetLastError());
+         return false;
+      }
+      return true;
+   }
+
+   return false;
+}
